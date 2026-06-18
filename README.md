@@ -42,7 +42,7 @@ docker run -d -p 8000:7860 --name spreadgl_backend florentlee/spread.gl.processi
 **Step 3: Start the Frontend (Visualization)**
 Run the following command to launch the browser-based visualization environment:
 ```bash
-docker run -d -p 3000:7860 --name spreadgl_frontend florentlee/spread.gl.web.page:2.0-beta`
+docker run -d -p 3000:7860 --name spreadgl_frontend florentlee/spread.gl.web.page:2.0-beta
 ```
 
 **Step 4: Launch the App**
