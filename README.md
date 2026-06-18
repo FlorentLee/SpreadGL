@@ -1,3 +1,12 @@
+---
+title: SpreadGL
+emoji: 🌍
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # spread.gl User Manual
 
 **spread.gl v2.0-beta** is an integrated data pipeline designed to visualize pathogen dispersal over geographic space and time. It unifies complex backend data processing (the extraction, transformation, and loading [ETL] of phylogenetic trees and environmental rasters) with a highly interactive, GPU-accelerated web rendering engine into a single, user-friendly graphical interface.
@@ -12,7 +21,7 @@
 
 ---
 
-## 🔒 Data Privacy & Live Demo
+## 🔐 Data Privacy & Live Demo
 
 spread.gl is designed with a **privacy-first architecture**. 
 
@@ -20,7 +29,7 @@ Unlike conventional web visualization tools that upload your sequences to third-
 
 ### 🌐 Live Hugging Face Demo
 For instant evaluation without any local installation, users can immediately test the platform via our official Hugging Face Space. All processing remains isolated within your browser session:
-👉 **[Hugging Face Space Live Demo]([Insert HF Link Here])**
+👉 **[Hugging Face Space Live Demo](https://huggingface.co/spaces/FlorentLee98/SpreadGL)**
 
 ### 📦 Local Running Options (Docker Hub)
 For full privacy-sandbox isolation, you can pull the official, production-ready container images directly from Docker Hub and run them locally:
