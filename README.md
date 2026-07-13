@@ -1,4 +1,4 @@
-# spread.gl User Manual
+# spread.gl v2.0 User Manual
 
 **spread.gl v2.0-beta** is an integrated data pipeline designed to visualize pathogen dispersal over geographic space and time. It unifies complex backend data processing (the extraction, transformation, and loading [ETL] of phylogenetic trees and environmental rasters) with a highly interactive, GPU-accelerated web rendering engine into a single, user-friendly graphical interface.
 
@@ -6,13 +6,15 @@
 
 ## 🌟 Key Features of v2.0-beta
 
-* **Universal File Support & Frictionless UX**: Offers a frictionless user experience through workspace-wide and global drag-and-drop upload functionality. The platform natively parses raw spatial files (`.geojson`, `.csv`) and instantly restores saved session states (`.json`), allowing users to transition seamlessly between dataset processing and visual exploration.
-* **Tianditu (天地图) Official Basemaps**: Integrates China's official Tianditu basemaps natively into the mapping engine. This ensures strict geographic mapping compliance and seamless accessibility for researchers within Chinese academia.
-* **Interactive Visual Analytics**: Supports real-time, exploratory analysis of phylogeographic structures. Users can dynamically filter transmission networks by Bayes Factor thresholds, play animations on a synchronized 4D spacetime timeline, and inspect raw geospatial data layers without dropping records.
-* **Migration Network Calculation**: 
-  * **Markov Jumps**: When a BEAST log file containing Markov jump count columns is supplied, the migration network's edge weight represents the **posterior expected number of jumps** (the average number of transitions across the MCMC sample distribution).
-  * **Transition Counts**: If no log file is provided (or if Markov jump columns are missing), the pipeline automatically falls back to the **conditional consensus migration network** where edge weights represent the raw count of transitions mapped along the consensus branches of a single summary tree (e.g., MCC/HIPSTR).
-* **Asymmetric BF Directionality**: For asymmetric (non-reversible) BEAST models, the Bayes Factor filter correctly enforces directionality — each migration route A→B must pass its own independent BF test without borrowing support from the reverse direction B→A.
+* **Migration Network Calculation**: The migration network edge weights are computed from the full MCMC posterior, giving each arc a statistically meaningful intensity:
+  * **Markov Jumps (primary)**: When a BEAST log file with Markov jump count columns is supplied, the arc weight represents the **posterior expected number of jumps** — the mean number of transitions across the entire post-burn-in MCMC tree distribution.
+  * **Consensus Edge Counts (fallback)**: If no log file is provided, the pipeline automatically falls back to a **conditional consensus migration network** where arc weights reflect the raw count of transitions along the consensus branches of a single summary tree (e.g., MCC/HIPSTR).
+* **Interactive Visual Analytics**: Offers a rich set of real-time exploration tools for phylogeographic structures:
+  * **Dynamic Trip Layer**: Viral lineage trajectories are rendered as animated light trails that move forward through time, with configurable trail lengths set relative to the outbreak duration.
+  * **Multimodal Layer Sync**: All spatial layers — phylogenetic trips, HPD credible-interval polygons, and dynamic environmental rasters — share a single synchronized timeline in Kepler.gl, so pressing play advances all layers together.
+  * **Bayes Factor Filter**: For discrete models, a real-time slider lets you set the significance threshold (e.g., BF > 3 for positive support, BF > 150 for decisive evidence). For asymmetric models, each route A→B is tested independently, without borrowing support from the reverse direction B→A.
+* **Frictionless UX**: Workspace-wide drag-and-drop upload handles raw spatial files (`.geojson`, `.csv`) and instantly restores saved sessions (`.json`), so users can switch between processing and visualization without losing state.
+* **Extended Basemap Options**: Beyond standard street and satellite tiles, spread.gl natively integrates **Tianditu (天地图)** — China's official national basemap — to ensure geographic mapping compliance and accessibility for researchers within Chinese academia.
 
 ---
 
@@ -87,19 +89,19 @@ Continuous phylogeography traces the exact latitude and longitude of viral linea
 6. Click **Run Pipeline**. The backend maps the viral trajectories and clips the temperature rasters to the target states.
 7. Click **Apply to Map**. The visualization engine natively binds the moving **Trip Layer** (which renders viral lineage trails set to 1/10th of the outbreak duration) and the shifting **Geo-Contextual Data Layer** (displaying temperature grid points) to the shared Kepler.gl **Timebar**.
 
-A core feature of the Map tab is the synchronized 4D timeline. When you press play on the time slider, Kepler.gl perfectly synchronizes all spatial layers simultaneously: the viral lineages moving along the dynamic_pathway (Trips Layer), the shifting credible intervals of the hpd_polygons, and the fading dynamic environmental temperature rasters. This allows researchers to visually correlate pathogen spread directly with changing ecological conditions.
+A core feature of the Map tab is the synchronized timeline. When you press play on the time slider, Kepler.gl perfectly synchronizes all spatial layers simultaneously: the viral lineages moving along the dynamic_pathway (Trips Layer), the shifting credible intervals of the hpd_polygons, and the fading dynamic environmental temperature rasters. This allows researchers to visually correlate pathogen spread directly with changing ecological conditions.
 
 #### 📅 Outbreak Evolution (Local Detail View):
 
 | Sep 2016 | Mar 2017 |
 | :---: | :---: |
-| ![Sep 2016](outputdata/YFV_Brazil/YFV_local_details/Sep%202016.png) | ![Mar 2017](outputdata/YFV_Brazil/YFV_local_details/Mar%202017.png) |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2016.png" width="360"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2017.png" width="360"> |
 
 | Sep 2017 | Mar 2018 |
 | :---: | :---: |
-| ![Sep 2017](outputdata/YFV_Brazil/YFV_local_details/Sep%202017.png) | ![Mar 2018](outputdata/YFV_Brazil/YFV_local_details/Mar%202018.png) |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2017.png" width="360"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2018.png" width="360"> |
 
-![YFV Legend](outputdata/YFV_Brazil/YFV_local_details/YFV%20Legend.png)
+| <img src="outputdata/YFV_Brazil/YFV_local_details/temp legend.png" width="180"> | <img src="outputdata/YFV_Brazil/YFV_local_details/time legend.png" width="180"> | 
 
 ---
 
@@ -132,13 +134,13 @@ This example demonstrates the advanced **reprojection** and **trimming** feature
 
 | Nov 05–10, 2020 | Dec 05–10, 2020 |
 | :---: | :---: |
-| ![Nov 2020](outputdata/B.1.1.7_UK/Nov%2005%20-%20Nov%2010%202020.png) | ![Dec 2020](outputdata/B.1.1.7_UK/Dec%2005%20-%20Dec%2010%202020.png) |
+| <img src="outputdata/B.1.1.7_UK/Nov 05 - Nov 10 2020.png" width="360"> | <img src="outputdata/B.1.1.7_UK/Dec 05 - Dec 10 2020.png" width="360"> |
 
 | Dec 26–31, 2020 | Jan 05–10, 2021 |
 | :---: | :---: |
-| ![Late Dec 2020](outputdata/B.1.1.7_UK/Dec%2026%20-%20Dec%2031%202020.png) | ![Jan 2021](outputdata/B.1.1.7_UK/Jan%2005%20-%20Jan%2010%202021.png) |
+| <img src="outputdata/B.1.1.7_UK/Dec 26 - Dec 31 2020.png" width="360"> | <img src="outputdata/B.1.1.7_UK/Jan 05 - Jan 10 2021.png" width="360"> |
 
-![B.1.1.7 Legend](outputdata/B.1.1.7_UK/B.1.1.7%20legend.png)
+<img src="outputdata/B.1.1.7_UK/B.1.1.7 legend.png" width="180">
 
 ---
 
@@ -177,11 +179,11 @@ If no BEAST `.log` file is uploaded, the pipeline falls back to the **conditiona
 
 | B.1.525 Dynamic Diffusion Paths | B.1.525 Migration Flows (BF > 150) |
 | :---: | :---: |
-| ![Dynamic Paths](outputdata/B.1.525_Global/B.1.525%20figure%20-%20dynamic%20paths.png) | ![Migration Flows](outputdata/B.1.525_Global/B.1.525%20figure%20-%20migration%20flows%20with%20cumulative%20exportations.png) |
+| <img src="outputdata/B.1.525_Global/B.1.525 figure - dynamic paths.png" width="360"> | <img src="outputdata/B.1.525_Global/B.1.525 figure - migration flows with cumulative exportations.png" width="360"> |
 
 | Trip Layer Legend | Arc Layer Legend | Cluster Layer Legend |
 | :---: | :---: | :---: |
-| ![Trip Legend](outputdata/B.1.525_Global/B.1.525%20legend%20-%20dynamic%20paths%20trip.png) | ![Arc Legend](outputdata/B.1.525_Global/B.1.525%20legend%20-%20migration%20flows%20arc.png) | ![Cluster Legend](outputdata/B.1.525_Global/B.1.525%20legend%20-%20cumulative%20exportations%20cluster.png) |
+| <img src="outputdata/B.1.525_Global/B.1.525 legend - dynamic paths trip.png" width="240"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - migration flows arc.png" width="240"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - cumulative exportations cluster.png" width="240"> |
 
 ---
 
