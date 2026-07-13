@@ -47,7 +47,7 @@ def parse_bayes_factors(indicators, location_list, poisson_prior_mean=math.log(2
         else:
             bf = (pk[row] / (1 - pk[row])) / prior_odds
         bayes_factor.append(bf)
-    return bayes_factor, pk
+    return bayes_factor, pk, symmetrical
 
 
 def run_bayes_factor_analysis(log_source, location_trait, location_list, burnin):
@@ -97,7 +97,7 @@ def run_bayes_factor_analysis(log_source, location_trait, location_list, burnin)
     elif 1 <= burnin < len(indicators):
         indicators = indicators[int(burnin):]
         
-    bayes_factor, posterior_probability = parse_bayes_factors(indicators, location_list)
+    bayes_factor, posterior_probability, symmetrical = parse_bayes_factors(indicators, location_list)
     
     bayes_df = pd.DataFrame({
         'start_name': starting_location,
@@ -106,7 +106,7 @@ def run_bayes_factor_analysis(log_source, location_trait, location_list, burnin)
         'posterior_probability': posterior_probability
     })
     
-    return bayes_df
+    return bayes_df, symmetrical
 
 
 def main():
@@ -138,7 +138,7 @@ def main():
         location_df = pd.read_csv(location_list_file)
         location_list = np.asarray(location_df['location'])
         
-        bayes_df = run_bayes_factor_analysis(log, location, location_list, burnin)
+        bayes_df, _ = run_bayes_factor_analysis(log, location, location_list, burnin)
         
         bayes_df.to_csv(f'Bayes.factor.test.result.csv', sep=',', index=False)
         print(f'The output of Bayes factor test has been saved as "Bayes.factor.test.result.csv" in the current directory.')   

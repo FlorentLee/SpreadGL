@@ -6,15 +6,14 @@ services:
       context: ./backend
     image: florentlee/spread.gl.processing.toolkit:2.0-beta
     ports:
-      - "8000:7860"
-    environment:
-      - PORT=7860
+      - "8000:8000"
 
   frontend:
     build:
       context: ./frontend
     image: florentlee/spread.gl.web.page:2.0-beta
     ports:
-      - "8080:7860"
+      - "3000:3000"
     depends_on:
       - backend
+

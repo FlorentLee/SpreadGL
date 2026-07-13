@@ -21,10 +21,10 @@ COPY --from=build /app/build/ /usr/share/nginx/html/
 COPY --from=build /app/index.html /usr/share/nginx/html/
 COPY --from=build /app/logo.png /usr/share/nginx/html/
 
-# Expose port 7860 as expected by Hugging Face Spaces
-EXPOSE 7860
+# Expose port 3000
+EXPOSE 3000
 
-# Configure Nginx to listen on port 7860
-RUN sed -i 's/listen\( \)*80;/listen 7860;/g' /etc/nginx/conf.d/default.conf
+# Configure Nginx to listen on port 3000
+RUN sed -i 's/listen\( \)*80;/listen 3000;/g' /etc/nginx/conf.d/default.conf
 
 CMD ["nginx", "-g", "daemon off;"]

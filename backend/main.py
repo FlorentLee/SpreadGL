@@ -18,6 +18,7 @@ from spatial_layer_generator.discrete_space_processor import handle_discrete_tre
 from spatial_layer_generator.continuous_space_processor import handle_continuous_tree
 from spatial_layer_generator.markov_jump_aggregator import aggregate_markov_jumps
 from bayes_factor_test.rates import run_bayes_factor_analysis
+from bayes_factor_test.markov_jump_parser import parse_markov_jump_counts
 
 app = FastAPI(title="SpreadGL API Bridge")
 
@@ -419,10 +420,12 @@ async def process_tree(
         aggregated_migration_network = None
         if analysis_type == "discrete" and coordinate_df is not None:
             bayes_filter = None
+            is_symmetrical = True  # default; updated below if log is provided
+            mj_weights = None
             if log_file is not None:
                 try:
                     location_list = coordinate_df['location'].astype(str).tolist()
-                    bayes_df = run_bayes_factor_analysis(
+                    bayes_df, is_symmetrical = run_bayes_factor_analysis(
                         log_source=log_file.file,
                         location_trait=trait_locations[0],
                         location_list=location_list,
@@ -434,26 +437,50 @@ async def process_tree(
                         bayes_filter[key] = float(row['bayes_factor'])
                 except Exception as e:
                     print(f"Warning: Bayes Factor calculation failed: {str(e)}. Proceeding without filter.")
-            
-            # Left merge of Bayes Factors into dynamic_pathway features
+
+                # Parse posterior Markov jump counts from the same log file.
+                # The log file pointer is rewound so it can be read again.
+                # If MJ count columns are absent (e.g. jump logging was not
+                # enabled in the BEAST XML), fall back gracefully to MCC
+                # edge-count weights with a warning.
+                try:
+                    log_file.file.seek(0)
+                    mj_weights = parse_markov_jump_counts(
+                        log_source=log_file.file,
+                        location_trait=trait_locations[0],
+                        location_list=location_list,
+                        burnin=burnin
+                    )
+                except Exception as e:
+                    print(
+                        f"Warning: Markov jump count parsing failed: {str(e)}. "
+                        f"Falling back to MCC/HIPSTR tree edge-count weights."
+                    )
+
+            # Annotate each branch in dynamic_pathway with its Bayes Factor.
+            # For asymmetric models, only look up the forward-direction BF;
+            # the reverse direction is a different, independently tested rate.
             if bayes_filter is not None:
                 for f in trip_features:
                     start = str(f['properties'].get('start_name', '')).strip()
                     end = str(f['properties'].get('end_name', '')).strip()
                     bf_val = bayes_filter.get((start, end))
-                    if bf_val is None:
+                    if bf_val is None and is_symmetrical:
                         bf_val = bayes_filter.get((end, start))
                     f['properties']['bayes_factor'] = bf_val
-            
+
             try:
                 aggregated_migration_network = aggregate_markov_jumps(
                     branches=branches,
                     coordinate_df=coordinate_df,
                     bayes_filter=bayes_filter,
-                    bf_threshold=bf_threshold
+                    bf_threshold=bf_threshold,
+                    is_symmetrical=is_symmetrical,
+                    mj_weights=mj_weights
                 )
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Markov Jump aggregation failed: {str(e)}")
+
 
         # Environmental Preprocessing
         geo_contextual_data = None

@@ -4,9 +4,10 @@
   "author": "Yimin Li <yiminflorent@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --mode development --progress --hot --open --port 8080",
-    "start-prod": "webpack-dev-server -p --progress --hot --open --port 8080",
+    "start": "webpack-dev-server --mode development --progress --hot --open --port 3000",
+    "start-prod": "webpack-dev-server -p --progress --hot --open --port 3000",
     "build": "webpack --mode production"
+
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^2.1.2",

@@ -1,191 +1,76 @@
-In this directory, you can find all the scripts that will be used to process maximum clade credibility (MCC) trees, typically from the BEAST v1.10 (or older) software package. Please check below for descriptions of how they work and some command-line based tutorials on how to use different tools. For instance, in spatial_layer_generator, the **spread.py** script is the key method to call upon, and will delegate further processing tasks to the other scripts. We show how to use these scripts in the different examples on the main page of this GitHub repository.
+# spread.gl Backend Processing Toolkit
 
+This directory contains the Python-based ETL (Extract, Transform, Load) backend processing toolkit for **spread.gl v2.0**. It processes Maximum Clade Credibility (MCC) trees (from BEAST v1.10 or BEAST v2), parses MCMC logs, transforms spatial projections, filters outliers, and generates GeoJSON outputs suitable for 3D visualization.
 
-# Script descriptions
+---
 
-**setup.py** describes moudle contents and distribution. It is used for installation.
+## 📂 Backend Directory Structure & Functioning Scripts
 
-**requirements.txt** lists all the required Python dependencies (a list of used third-party packages) for the Spread.gl processing scripts.
+### 1. Root Scripts
+* **[main.py](file:///Users/u0150975/Downloads/SpreadGL/backend/main.py)**: The FastAPI server that exposes the endpoints for the frontend. It integrates all ETL processors, handles file uploads, executes processing, runs Bayes Factor analysis, parses Markov jumps, and returns combined GeoJSON datasets.
+* **[run_regression_tests.py](file:///Users/u0150975/Downloads/SpreadGL/backend/run_regression_tests.py)**: The integration test suite that runs 3 automated, end-to-end tests validating continuous, environmental raster, reprojecting/trimming, and asymmetric discrete phylogeographic models.
+* **[setup.py](file:///Users/u0150975/Downloads/SpreadGL/backend/setup.py)**: Setup script describing modules and entry points for packaging the toolkit.
 
-## spatial_layer_generator
+### 2. Spatial Layer Generator (`spatial_layer_generator/`)
+This module handles parsing and transformation of phylogenetic trees.
+* **[spread.py](file:///Users/u0150975/Downloads/SpreadGL/backend/spatial_layer_generator/spread.py)**: The main CLI interface that receives command-line parameters and routes them to continuous or discrete processors.
+* **[continuous_space_processor.py](file:///Users/u0150975/Downloads/SpreadGL/backend/spatial_layer_generator/continuous_space_processor.py)**: Processes continuous MCC trees. Parses node heights and coordinates, builds 3D spatial branches, extracts coordinate annotations, and generates HPD (Highest Posterior Density) uncertainty polygons.
+* **[discrete_space_processor.py](file:///Users/u0150975/Downloads/SpreadGL/backend/spatial_layer_generator/discrete_space_processor.py)**: Processes discrete MCC trees. Matches node state annotations with location names and resolves them to coordinates.
+* **[markov_jump_aggregator.py](file:///Users/u0150975/Downloads/SpreadGL/backend/spatial_layer_generator/markov_jump_aggregator.py)**: Groups transmission events by (start, end) locations. Computes edge weights, resolves coordinates, applies Bayes Factor filtering, and outputs an aggregated migration network.
+* **[time_conversion.py](file:///Users/u0150975/Downloads/SpreadGL/backend/spatial_layer_generator/time_conversion.py)**: Utility module for converting dates between decimal years and calendar dates (e.g. `YYYY-MM-DD` or `DD-MM-YYYY`).
 
-**spread.py** parses the arguments from the client end and automatically passes the values of different parameters onto the corresponding script, depending on the (automatically) detected type of phylogeographic analysis (i.e., discrete or continuous).
+### 3. Bayes Factor Test (`bayes_factor_test/`)
+Calculates statistical support for discrete migration rates.
+* **[rates.py](file:///Users/u0150975/Downloads/SpreadGL/backend/bayes_factor_test/rates.py)**: Computes Bayes Factors (BF) and posterior probabilities from BSSVS indicator columns in the BEAST log. Determines automatically if the model is symmetric or asymmetric.
+* **[markov_jump_parser.py](file:///Users/u0150975/Downloads/SpreadGL/backend/bayes_factor_test/markov_jump_parser.py)**: Parses Markov jump count columns (`c_{trait}` or `actual_jumps`) from the BEAST log, applies burn-in, and computes the posterior expected jump counts (MCMC column means). Handles complex location names containing "to" using split-validation.
 
-**continuous_space_processor.py** accepts values from **spread.py**, processes the tree by calling the code in **continuous_tree_handler.py** and returns the result in the format of either CSV or GeoJSON. By default, the format of the output file is set as GeoJSON, which is a format for encoding a variety of geographic data structures. If the users would like to inspect the result in a table, an output file of the CSV format will be provided by using an additional argument for output.
+### 4. Environmental Layer Generator (`environmental_layer_generator/`)
+Aligns spatial pathogen data with environmental variables.
+* **[regions.py](file:///Users/u0150975/Downloads/SpreadGL/backend/environmental_layer_generator/regions.py)**: Generates regional polygon layers by mapping demographic/environmental data from spreadsheets (CSV) onto a GeoJSON map boundary.
+* **[raster.py](file:///Users/u0150975/Downloads/SpreadGL/backend/environmental_layer_generator/raster.py)**: Clips a static climate raster file (TIFF) with a boundary mask and filters coordinates within targeted locations.
+* **[rasters.py](file:///Users/u0150975/Downloads/SpreadGL/backend/environmental_layer_generator/rasters.py)**: Processes time-series climate rasters, appending a timestamp to each layer to support dynamic timeline visualizations.
 
-**continuous_tree_handler.py** deals with a tree file with annotated geographic coordinates in the context of continuous phylogeographic analysis. Some methods from the DendroPy 4.5.2 library will be called to pre-order traverse the tree using the algorithm of depth-first search (DFS). From each tree branch and its two ends, some existing information will be collected, such as length, height, and location information. The time information of tip/external branches will be calculated based on the provided most recent tip time, or obtained from the sequence names (if the information is available there). The time information of node/internal branches will be calculated by **branch_processor.py**. To accommodate potential geographic uncertainty by the 80% HPD (highest posterior density), i.e. the shortest interval that contains 80% of the sampled values, we use GeoJSON polygons for the representation of contours. Each branch information as well as its polygons (if existing) will be put into a spatially bounded entity, called Feature. All the feature objects made from the tree will be stored in a FeatureCollection.
+### 5. Projection Transformation (`projection_transformation/`)
+* **[reprojection.py](file:///Users/u0150975/Downloads/SpreadGL/backend/projection_transformation/reprojection.py)**: Translates coordinates between coordinate reference systems (e.g., from local projections like EPSG:27700 BNG to web-standard EPSG:4326 WGS84).
 
-**discrete_space_processor.py** accepts values from **spread.py**, processes the tree by calling the code in **discrete_tree_handler.py** and returns the result in the format of either CSV or GeoJSON. By default, the format of the output file is set as GeoJSON, which is a format for encoding a variety of geographic data structures. If the users would like to inspect the result in a table, an output file of the CSV format will be provided by using an additional argument for output.
+### 6. Outlier Detection (`outlier_detection/`)
+* **[trimming.py](file:///Users/u0150975/Downloads/SpreadGL/backend/outlier_detection/trimming.py)**: Performs database queries and checks against referenced coordinates to remove empty or invalid data branches.
 
-**discrete_tree_handler.py** works similarly to **continuous_tree_handler.py**, but the users have to provide an extra location list (with geographic coordinates for the discrete locations) in the context of discrete phylogeographic analysis.
+---
 
-**branch_processor.py** calculates the time information of all the node/internal tree branches iteratively. For each branch, the current end time equals the start time of its child branch, whereas the current start time can be inferred according to its length.
+## 🛠️ CLI Tutorials
 
-**time_conversion.py** converts time information between different formats.
-
-## bayes_factor_test
-**rates.py** performs a Bayes factor test of significant diffusion rates on the BEAST log of discrete phylogeographic inference.
-
-## environmental_layer_generator
-
-**regions.py** creates an environmental layer by adding table data to a GeoJSON map.
-
-**raster.py** creates an environmental layer using raster data along with a location list and a GeoJSON boundary map.
-
-**raster.py** creates a dynamic environmental layer using raster data along with a location list and a GeoJSON boundary map.
-
-## projection_transformation
-
-**reprojection.py** converts geographic data between different coordinate reference systems.
-
-## outlier_detection
-
-**trimming.py** detects outliers of the current referencing dataset by performing NULL queries on the specified fields of another referenced dataset. As for the example of SARS-CoV-2 lineage B.1.1.7 (VOC Alpha) in England, it filters out all the branches lacking UTLA (Upper Tier Local Authorities in England) information.
-
-
-# Tutorials
-
+### 1. Generating Spatial Layers (`spread`)
+```bash
+spread --tree <tree_file> --time <most_recent_tip_time> --location <location_trait> [options]
 ```
-spread --help
-```
-```
-Welcome to the spatial layer generator! You can create a spatial layer for a phylogenetic tree to display in Spread.gl.
+* `--tree`, `-tr`: Path to NEXUS tree.
+* `--time`, `-ti`: Calendar date or decimal year of the latest tip.
+* `--location`, `-lo`: Location trait name (e.g. `region` or `coordinates`).
+* `--list`, `-li`: Location coordinates list CSV (required for discrete).
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --tree TREE, -tr TREE
-                        Specify the filename (with extension) of your input tree file.
-  --time TIME, -ti TIME
-                        Enter the date of the most recent tip. It can be either a formatted date or a decimal year.
-  --format {YYYY-MM-DD,DD-MM-YYYY}, -f {YYYY-MM-DD,DD-MM-YYYY}
-                        This OPTIONAL argument specifies the date format found at the end of phylogenetic tree taxa names. The
-                        default format is "YYYY-MM-DD". It also supports "DD-MM-YYYY".
-  --location LOCATION, -lo LOCATION
-                        Type in the annotation that stores the location information (names or coordinates). If there are two
-                        annotations to store coordinates, enter them in the order of latitude and longitude with a comma
-                        separator.
-  --list LIST, -li LIST
-                        Only compulsory for discrete space analysis. Use a location list with its filename extension as an input.
-                        This file should be in the csv format with a comma (",") separator, and comprised of three columns with a
-                        specific header of "location,latitude,longitude".
-  --extension {geojson,csv}, -e {geojson,csv}
-                        This OPTIONAL argument specifies the output file extension. The default extension is "geojson". It also
-                        supports "csv" to generate a table (without HPD polygons in case of continuous phylogeographic diffusion).
+### 2. Computing Bayes Factors (`rates`)
+```bash
+rates --log <beast_log> --location <trait_name> --list <location_csv> --burnin <burnin>
+```
+* Calculates BFs for discrete migration routes and optionally appends them to a spatial CSV layer using `--layer`.
+
+### 3. Creating Regional Environmental Layers (`regions`)
+```bash
+regions --data <variables_csv> --locationColumn <col> --map <geojson_map> --locationVariable <prop> --output <output_geojson>
 ```
 
-```
-rates --help
-```
-```
-You can use this tool to perform the Bayes factor test of significant diffusion rates on the BEAST log of discrete phylogeographic inference.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --log LOG, -lg LOG    Specify the input BEAST log file (.log).
-  --location LOCATION, -lo LOCATION
-                        Type in the annotation that stores the location names in the MCC tree, e.g. "region".
-  --burnin BURNIN, -b BURNIN
-                        Specify burn-in to set how many initial sampled values should be discarded from the analysis. It should be smaller than
-                        1 but not less than 0, e.g. "0.1" should be sufficient for most analyses. You can also specify it by using the number
-                        of rows, which should be a valid integer in this case.
-  --list LIST, -li LIST
-                        Use the same location list from your discrete analysis as an input (.csv).
-  --layer LAYER, -la LAYER
-                        Optional: You can add the Bayes factors to the spatial layer. Use the file of a discrete spatial layer as an input (.csv).
+### 4. Processing Environmental Rasters (`raster` / `rasters`)
+```bash
+rasters --data <raster_dir> --map <mask_geojson> --locationVariable <prop> --locationList <states_txt> --output <output_csv>
 ```
 
-```
-regions --help
-```
-```
-You can use this tool to create an environmental layer with tabular data.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --data DATA, -d DATA  Specify the environmental tabular data you want to visualise (.csv, comma-delimited).
-  --locationColumn LOCATIONCOLUMN, -lc LOCATIONCOLUMN
-                        In the CSV file, find the column that stores the location information.
-  --map MAP, -m MAP     Specify the input boundary map in GeoJSON format (.geojson).
-  --locationVariable LOCATIONVARIABLE, -lv LOCATIONVARIABLE
-                        In the GeoJSON input map, find a property that represents the location variable.
-  --output OUTPUT, -o OUTPUT
-                        Give a name to the output environmental data layer (.geojson).
+### 5. Reprojecting Coordinates (`reprojection`)
+```bash
+reprojection --input <input_csv> --lat <lat_cols> --lon <lon_cols> --source <source_epsg> --target <target_epsg> --output <output_csv>
 ```
 
-```
-raster --help
-```
-```
-You can use this tool to create an environmental layer with raster data.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --data DATA, -d DATA  Enter the folder that contains raster data files (.tif).
-  --map MAP, -m MAP     Specify the input boundary map (.geojson).
-  --locationVariable LOCATIONVARIABLE, -lv LOCATIONVARIABLE
-                        In the GeoJSON input map, find a property that represents the location variable.
-  --locationList LOCATIONLIST, -ll LOCATIONLIST
-                        Provide a location list of interest (.txt, comma-delimited).
-  --output OUTPUT, -o OUTPUT
-                        Give a name to the output environmental data layer (.csv).
-```
-
-```
-rasters --help
-```
-```
-This tool converts multiple raster TIFF files into one CSV with a timestamp per file. It is designed for time-series climate data (e.g., WorldClim).
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --data DATA, -d DATA  Enter the folder that contains raster data files (.tif).
-  --map MAP, -m MAP     Specify the input boundary map (.geojson).
-  --locationVariable LOCATIONVARIABLE, -lv LOCATIONVARIABLE
-                        In the GeoJSON input map, find a property that represents the location variable.
-  --locationList LOCATIONLIST, -ll LOCATIONLIST
-                        Provide a location list of interest (.txt, comma-delimited).
-  --output OUTPUT, -o OUTPUT
-                        Name the output dynamic environment data layer (.csv).
-```
-
-```
-reprojection --help
-```
-```
-Use this tool to convert geographic data between different CRS.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --input INPUT, -i INPUT
-                        Specify the comma-delimited input file with filename extension (.csv).
-  --lat LAT, -la LAT    Type in the field names of source latitudes with a comma separator.
-  --lon LON, -lo LON    Type in the field names of source longitudes with a comma separator.
-  --source SOURCE, -s SOURCE
-                        Type in EPSG code of source CRS, e.g. 27700.
-  --target TARGET, -t TARGET
-                        Type in EPSG code of target CRS. e.g. 4326.
-  --output OUTPUT, -o OUTPUT
-                        Create a name with filename extension (.csv) for the output file.
-```
-
-```
-trimming --help
-```
-```
-Use this tool to remove outliers of the current dataset by referring to another one.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --referencing REFERENCING, -ri REFERENCING
-                        Enter the name of a comma-delimited referencing table with filename extension (.csv).
-  --foreignkey FOREIGNKEY, -fk FOREIGNKEY
-                        Enter the foreign key field name of the referencing table, e.g. "end_lat".
-  --referenced REFERENCED, -rd REFERENCED
-                        Enter the name of a comma-delimited referenced dataset with filename extension (.csv).
-  --primarykey PRIMARYKEY, -pk PRIMARYKEY
-                        Enter the primary key field name of the referenced dataset, e.g. "endLat".
-  --null NULL, -n NULL  Specify the queried field(s) in the referenced dataset where NULL values are recorded. If multiple fields are involved
-                        in the NULL queries, use a comma separator in between.
-  --output OUTPUT, -o OUTPUT
-                        Create a name with filename extension (.csv) for the output file.
+### 6. Trimming Outliers (`trimming`)
+```bash
+trimming --referencing <ref_csv> --foreignkey <foreign_key> --referenced <dataset_csv> --primarykey <primary_key> --null <null_fields> --output <output_csv>
 ```

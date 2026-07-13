@@ -25,7 +25,7 @@ RUN python setup.py install
 
 # Configure Python path
 ENV PYTHONPATH=/backend
-# Expose port 7860 as required by Hugging Face Spaces
-EXPOSE 7860
+# Expose port 8000
+EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
