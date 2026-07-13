@@ -95,13 +95,15 @@ A core feature of the Map tab is the synchronized timeline. When you press play 
 
 | Sep 2016 | Mar 2017 |
 | :---: | :---: |
-| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2016.png" width="360"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2017.png" width="360"> |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2016.png" width="450"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2017.png" width="450"> |
 
 | Sep 2017 | Mar 2018 |
 | :---: | :---: |
-| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2017.png" width="360"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2018.png" width="360"> |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2017.png" width="450"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2018.png" width="450"> |
 
-| <img src="outputdata/YFV_Brazil/YFV_local_details/temp legend.png" width="180"> | <img src="outputdata/YFV_Brazil/YFV_local_details/time legend.png" width="180"> | 
+| Temperature Layer Legend | HPD Layer Legend |
+| :---: | :---: |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/temp legend.png" width="200"> | <img src="outputdata/YFV_Brazil/YFV_local_details/time legend.png" width="250"> |
 
 ---
 
@@ -134,13 +136,15 @@ This example demonstrates the advanced **reprojection** and **trimming** feature
 
 | Nov 05–10, 2020 | Dec 05–10, 2020 |
 | :---: | :---: |
-| <img src="outputdata/B.1.1.7_UK/Nov 05 - Nov 10 2020.png" width="360"> | <img src="outputdata/B.1.1.7_UK/Dec 05 - Dec 10 2020.png" width="360"> |
+| <img src="outputdata/B.1.1.7_UK/Nov 05 - Nov 10 2020.png" width="450"> | <img src="outputdata/B.1.1.7_UK/Dec 05 - Dec 10 2020.png" width="450"> |
 
 | Dec 26–31, 2020 | Jan 05–10, 2021 |
 | :---: | :---: |
-| <img src="outputdata/B.1.1.7_UK/Dec 26 - Dec 31 2020.png" width="360"> | <img src="outputdata/B.1.1.7_UK/Jan 05 - Jan 10 2021.png" width="360"> |
+| <img src="outputdata/B.1.1.7_UK/Dec 26 - Dec 31 2020.png" width="450"> | <img src="outputdata/B.1.1.7_UK/Jan 05 - Jan 10 2021.png" width="450"> |
 
-<img src="outputdata/B.1.1.7_UK/B.1.1.7 legend.png" width="180">
+| Cluster Layer Legend|
+| :---: |
+| <img src="outputdata/B.1.1.7_UK/B.1.1.7 legend.png" width="200"> |
 
 ---
 
@@ -179,11 +183,11 @@ If no BEAST `.log` file is uploaded, the pipeline falls back to the **conditiona
 
 | B.1.525 Dynamic Diffusion Paths | B.1.525 Migration Flows (BF > 150) |
 | :---: | :---: |
-| <img src="outputdata/B.1.525_Global/B.1.525 figure - dynamic paths.png" width="360"> | <img src="outputdata/B.1.525_Global/B.1.525 figure - migration flows with cumulative exportations.png" width="360"> |
+| <img src="outputdata/B.1.525_Global/B.1.525 figure - dynamic paths.png" width="450"> | <img src="outputdata/B.1.525_Global/B.1.525 figure - migration flows with cumulative exportations.png" width="450"> |
 
 | Trip Layer Legend | Arc Layer Legend | Cluster Layer Legend |
 | :---: | :---: | :---: |
-| <img src="outputdata/B.1.525_Global/B.1.525 legend - dynamic paths trip.png" width="240"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - migration flows arc.png" width="240"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - cumulative exportations cluster.png" width="240"> |
+| <img src="outputdata/B.1.525_Global/B.1.525 legend - dynamic paths trip.png" width="200"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - migration flows arc.png" width="200"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - cumulative exportations cluster.png" width="200"> |
 
 ---
 
