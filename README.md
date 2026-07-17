@@ -69,41 +69,46 @@ If you prefer using the **Docker Desktop Graphical User Interface (GUI)**:
 This section walks through three example visualizations covering continuous and discrete phylogeographic analyses.
 
 ---
+### Example 1: Discrete Phylogeography with Posterior Markov Jump Weights (SARS-CoV-2 B.1.525 Global)
 
-### Example 1: Continuous Phylogeography with Environmental Rasters (YFV in Brazil)
+Discrete phylogeography reconstructions represent viral spread as transitions among discrete locations. This example demonstrates the full pipeline with an **asymmetric** BEAST model: posterior Markov jump weights derived from the MCMC log, Bayes Factor filtering with correct directional enforcement, and interactive BF threshold adjustment.
 
-Continuous phylogeography traces the exact latitude and longitude of viral lineages over time. By syncing this trajectory with environmental variables (e.g., temperature grids), researchers can correlate climate variations with dispersal speed.
+* **Dataset**: SARS-CoV-2 Eta Variant (B.1.525) — Global (31 regions)
+  * **Tree File**: `inputdata/SARS_CoV-2_B.1.525_Global/B.1.525.Analysis2.joint.phylogeo.HIPSTR.tree`
+  * **Locations**: `inputdata/SARS_CoV-2_B.1.525_Global/B.1.525.full.dataset.2910.region.coordinates.csv`
+  * **BEAST Log**: `inputdata/SARS_CoV-2_B.1.525_Global/B.1.525.Analysis2.thorney.joint.phylogeo.burnin.removed.log`
 
-* **Dataset**: Yellow Fever Virus (YFV) in Brazil
-  * **Tree File**: `inputdata/YFV_Brazil/YFV.MCC.tree`
-  * **Rasters**: Directory of monthly `.tif` rasters `inputdata/YFV_Brazil/wc2.1_5m_tmax_2015-2019/`
-  * **Mask Boundary**: `inputdata/YFV_Brazil/GeoBoundaries.BRA.ADM1.geojson`
-  * **Location List**: `inputdata/YFV_Brazil/Involved.Brazilian.states.txt`
+#### Understanding the Edge Weights
+
+When a BEAST `.log` file containing Markov jump counts is provided, the pipeline processes the transition history over all post-burn-in MCMC samples. The edge weight of the network represents the **posterior expected number of Markov jumps** for each directed pair A→B:
+
+$$\text{weight}_{A \to B} = \frac{1}{N} \sum_{i=1}^{N} c_{A \to B}^{(i)}$$
+
+where $c_{A \to B}^{(i)}$ is the exact transition count from state A to state B in the $i$-th MCMC sample and $N$ is the total post-burn-in sample size. This calculation tracks state changes over the entire tree distribution.
+
+##### Consensus Fallback (Without BEAST Log)
+If no BEAST `.log` file is uploaded, the pipeline falls back to the **conditional consensus migration network**. In this mode, the edge weight is computed as the raw count of transitions mapped along the consensus branches of the single Maximum Clade Credibility (MCC) tree. This fallback is useful when only the MCC summary tree is available, though it represents a single consensus topology rather than the full posterior distribution.
 
 #### 🚶 Step-by-Step Instructions:
-1. Select the **Setup** tab and set **Analysis Type** to **Continuous**.
-2. Upload `YFV.MCC.tree` in the **Tree File** field. Your tree file must strictly adhere to the standard `#NEXUS` format.
-3. Enter `location1,location2` under **Location Trait** and set **Most Recent Tip Time** to `2019-04-16`.
-4. Turn on the **Environmental Data Layer** and select **Rasters** as the type.
-5. Upload the folder containing the `.tif` rasters, select `GeoBoundaries.BRA.ADM1.geojson` as the mask boundary, and choose `Involved.Brazilian.states.txt` as the location list. Set **Location Variable** to `shapeName`.
-6. Click **Run Pipeline**. The backend maps the viral trajectories and clips the temperature rasters to the target states.
-7. Click **Apply to Map**. The visualization engine natively binds the moving **Trip Layer** (which renders viral lineage trails set to 1/10th of the outbreak duration) and the shifting **Geo-Contextual Data Layer** (displaying temperature grid points) to the shared Kepler.gl **Timebar**.
+1. Select the **Setup** tab and set **Analysis Type** to **Discrete**.
+2. Upload the B.1.525 `.tree` file.
+3. Upload the `.csv` Location List (containing `location,latitude,longitude`) and type the corresponding **Location Trait** as `region`. Set **Most Recent Tip Time** to `2021-09-23`.
+4. In the **Bayes Factors** section, upload the BEAST `.log` file. Set the **Burn-in** to `0` (the reference log file has already had burn-in removed). If your log still contains burn-in samples, set the appropriate fraction (e.g., `0.1` for 10%).
+5. Click **Run Pipeline**. The backend:
+   * Computes Bayes Factors from the BSSVS indicator columns and automatically detects the model as **asymmetric** (930 indicators for 31 locations = $31 \times 30$, not $31 \times 30 / 2$).
+   * Parses all 930 Markov jump count columns and computes the posterior mean for each directed pair.
+6. Click **Apply to Map**. The map will load the animated `dynamic_pathway` by default. We converted it to a cluster layer, where scaled circles reflect the cumulative exportations.
+7. Click the layer visibility icon to turn on the **Aggregated Migration Network**. The arc widths now scale with the **posterior expected number of Markov jumps** — the standard phylogeographic edge weight. Use the auto-generated Bayes Factor filter in the left panel to dynamically threshold the network (e.g., slide to `>150` for decisive evidence, isolating the primary export hubs).
 
-A core feature of the Map tab is the synchronized timeline. When you press play on the time slider, Kepler.gl perfectly synchronizes all spatial layers simultaneously: the viral lineages moving along the dynamic_pathway (Trips Layer), the shifting credible intervals of the hpd_polygons, and the fading dynamic environmental temperature rasters. This allows researchers to visually correlate pathogen spread directly with changing ecological conditions.
+#### 📊 Visualizations:
 
-#### 📅 Outbreak Evolution (Local Detail View):
+| B.1.525 Migration Flows (BF > 150) |
+| :---: |
+| <img src="outputdata/B.1.525_Global/B.1.525 figure - migration flows with cumulative exportations.png" width="900"> |
 
-| Sep 2016 | Mar 2017 |
+| Arc Layer Legend | Cluster Layer Legend |
 | :---: | :---: |
-| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2016.png" width="450"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2017.png" width="450"> |
-
-| Sep 2017 | Mar 2018 |
-| :---: | :---: |
-| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2017.png" width="450"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2018.png" width="450"> |
-
-| Temperature Layer Legend | HPD Layer Legend |
-| :---: | :---: |
-| <img src="outputdata/YFV_Brazil/YFV_local_details/temp legend.png" width="200"> | <img src="outputdata/YFV_Brazil/YFV_local_details/time legend.png" width="250"> |
+| <img src="outputdata/B.1.525_Global/B.1.525 legend - migration flows arc.png" width="200"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - cumulative exportations cluster.png" width="200"> |
 
 ---
 
@@ -148,46 +153,40 @@ This example demonstrates the advanced **reprojection** and **trimming** feature
 
 ---
 
-### Example 3: Discrete Phylogeography with Posterior Markov Jump Weights (SARS-CoV-2 B.1.525 Global)
+### Example 3: Continuous Phylogeography with Environmental Rasters (YFV in Brazil)
 
-Discrete phylogeography reconstructions represent viral spread as transitions among discrete locations. This example demonstrates the full pipeline with an **asymmetric** BEAST model: posterior Markov jump weights derived from the MCMC log, Bayes Factor filtering with correct directional enforcement, and interactive BF threshold adjustment.
+Continuous phylogeography traces the exact latitude and longitude of viral lineages over time. By syncing this trajectory with environmental variables (e.g., temperature grids), researchers can correlate climate variations with dispersal speed.
 
-* **Dataset**: SARS-CoV-2 Eta Variant (B.1.525) — Global (31 regions)
-  * **Tree File**: `inputdata/SARS_CoV-2_B.1.525_Global/B.1.525.Analysis2.joint.phylogeo.HIPSTR.tree`
-  * **Locations**: `inputdata/SARS_CoV-2_B.1.525_Global/B.1.525.full.dataset.2910.region.coordinates.csv`
-  * **BEAST Log**: `inputdata/SARS_CoV-2_B.1.525_Global/B.1.525.Analysis2.thorney.joint.phylogeo.burnin.removed.log`
-
-#### Understanding the Edge Weights
-
-When a BEAST `.log` file containing Markov jump counts is provided, the pipeline processes the transition history over all post-burn-in MCMC samples. The edge weight of the network represents the **posterior expected number of Markov jumps** for each directed pair A→B:
-
-$$\text{weight}_{A \to B} = \frac{1}{N} \sum_{i=1}^{N} c_{A \to B}^{(i)}$$
-
-where $c_{A \to B}^{(i)}$ is the exact transition count from state A to state B in the $i$-th MCMC sample and $N$ is the total post-burn-in sample size. This calculation tracks state changes over the entire tree distribution.
-
-##### Consensus Fallback (Without BEAST Log)
-If no BEAST `.log` file is uploaded, the pipeline falls back to the **conditional consensus migration network**. In this mode, the edge weight is computed as the raw count of transitions mapped along the consensus branches of the single Maximum Clade Credibility (MCC) tree. This fallback is useful when only the MCC summary tree is available, though it represents a single consensus topology rather than the full posterior distribution.
+* **Dataset**: Yellow Fever Virus (YFV) in Brazil
+  * **Tree File**: `inputdata/YFV_Brazil/YFV.MCC.tree`
+  * **Rasters**: Directory of monthly `.tif` rasters `inputdata/YFV_Brazil/wc2.1_5m_tmax_2015-2019/`
+  * **Mask Boundary**: `inputdata/YFV_Brazil/GeoBoundaries.BRA.ADM1.geojson`
+  * **Location List**: `inputdata/YFV_Brazil/Involved.Brazilian.states.txt`
 
 #### 🚶 Step-by-Step Instructions:
-1. Select the **Setup** tab and set **Analysis Type** to **Discrete**.
-2. Upload the B.1.525 `.tree` file.
-3. Upload the `.csv` Location List (containing `location,latitude,longitude`) and type the corresponding **Location Trait** as `region`. Set **Most Recent Tip Time** to `2021-09-23`.
-4. In the **Bayes Factors** section, upload the BEAST `.log` file. Set the **Burn-in** to `0` (the reference log file has already had burn-in removed). If your log still contains burn-in samples, set the appropriate fraction (e.g., `0.1` for 10%).
-5. Click **Run Pipeline**. The backend:
-   * Computes Bayes Factors from the BSSVS indicator columns and automatically detects the model as **asymmetric** (930 indicators for 31 locations = $31 \times 30$, not $31 \times 30 / 2$).
-   * Parses all 930 Markov jump count columns and computes the posterior mean for each directed pair.
-6. Click **Apply to Map**. The map will load the animated `dynamic_pathway` by default.
-7. Click the layer visibility icon to turn on the **Aggregated Migration Network**. The arc widths now scale with the **posterior expected number of Markov jumps** — the standard phylogeographic edge weight. Use the auto-generated Bayes Factor filter in the left panel to dynamically threshold the network (e.g., slide to `>150` for decisive evidence, isolating the primary export hubs).
+1. Select the **Setup** tab and set **Analysis Type** to **Continuous**.
+2. Upload `YFV.MCC.tree` in the **Tree File** field. Your tree file must strictly adhere to the standard `#NEXUS` format.
+3. Enter `location1,location2` under **Location Trait** and set **Most Recent Tip Time** to `2019-04-16`.
+4. Turn on the **Environmental Data Layer** and select **Rasters** as the type.
+5. Upload the folder containing the `.tif` rasters, select `GeoBoundaries.BRA.ADM1.geojson` as the mask boundary, and choose `Involved.Brazilian.states.txt` as the location list. Set **Location Variable** to `shapeName`.
+6. Click **Run Pipeline**. The backend maps the viral trajectories and clips the temperature rasters to the target states.
+7. Click **Apply to Map**. The visualization engine natively binds the moving **Trip Layer** (which renders viral lineage trails set to 1/10th of the outbreak duration) and the shifting **Geo-Contextual Data Layer** (displaying temperature grid points) to the shared Kepler.gl **Timebar**.
 
-#### 📊 Visualizations:
+A core feature of the Map tab is the synchronized timeline. When you press play on the time slider, Kepler.gl perfectly synchronizes all spatial layers simultaneously: the viral lineages moving along the dynamic_pathway (Trips Layer), the shifting credible intervals of the hpd_polygons, and the fading dynamic environmental temperature rasters. This allows researchers to visually correlate pathogen spread directly with changing ecological conditions.
 
-| B.1.525 Migration Flows (BF > 150) |
-| :---: |
-| <img src="outputdata/B.1.525_Global/B.1.525 figure - migration flows with cumulative exportations.png" width="900"> |
+#### 📅 Outbreak Evolution (Local Detail View):
 
-| Arc Layer Legend | Cluster Layer Legend |
+| Sep 2016 | Mar 2017 |
 | :---: | :---: |
-| <img src="outputdata/B.1.525_Global/B.1.525 legend - migration flows arc.png" width="200"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - cumulative exportations cluster.png" width="200"> |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2016.png" width="450"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2017.png" width="450"> |
+
+| Sep 2017 | Mar 2018 |
+| :---: | :---: |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/Sep 2017.png" width="450"> | <img src="outputdata/YFV_Brazil/YFV_local_details/Mar 2018.png" width="450"> |
+
+| Temperature Layer Legend | HPD Layer Legend |
+| :---: | :---: |
+| <img src="outputdata/YFV_Brazil/YFV_local_details/temp legend.png" width="200"> | <img src="outputdata/YFV_Brazil/YFV_local_details/time legend.png" width="250"> |
 
 ---
 
