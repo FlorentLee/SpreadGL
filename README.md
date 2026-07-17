@@ -171,7 +171,7 @@ If no BEAST `.log` file is uploaded, the pipeline falls back to the **conditiona
 #### 🚶 Step-by-Step Instructions:
 1. Select the **Setup** tab and set **Analysis Type** to **Discrete**.
 2. Upload the B.1.525 `.tree` file.
-3. Upload the `.csv` Location List (containing `location,latitude,longitude`) and type the corresponding **Location Trait** as `region`. Set **Most Recent Tip Time** to `2021-07-01`.
+3. Upload the `.csv` Location List (containing `location,latitude,longitude`) and type the corresponding **Location Trait** as `region`. Set **Most Recent Tip Time** to `2021-09-23`.
 4. In the **Bayes Factors** section, upload the BEAST `.log` file. Set the **Burn-in** to `0` (the reference log file has already had burn-in removed). If your log still contains burn-in samples, set the appropriate fraction (e.g., `0.1` for 10%).
 5. Click **Run Pipeline**. The backend:
    * Computes Bayes Factors from the BSSVS indicator columns and automatically detects the model as **asymmetric** (930 indicators for 31 locations = $31 \times 30$, not $31 \times 30 / 2$).
