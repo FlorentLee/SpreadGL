@@ -132,7 +132,7 @@ This example demonstrates the advanced **reprojection** and **trimming** feature
 7. Click **Run Pipeline**. The backend reprojects all coordinates from British National Grid to WGS84 and filters out branches lacking UTLA assignment.
 8. Click **Apply to Map**. The visualization shows B.1.1.7 diffusion paths across England with all coordinates correctly rendered in web-standard WGS84.
 
-#### 📊 Temporal Snapshots of B.1.1.7 Diffusion:
+#### 📊 Outbreak Snapshots of B.1.1.7 Diffusion:
 
 | Nov 05–10, 2020 | Dec 05–10, 2020 |
 | :---: | :---: |
@@ -181,13 +181,13 @@ If no BEAST `.log` file is uploaded, the pipeline falls back to the **conditiona
 
 #### 📊 Visualizations:
 
-| B.1.525 Dynamic Diffusion Paths | B.1.525 Migration Flows (BF > 150) |
-| :---: | :---: |
-| <img src="outputdata/B.1.525_Global/B.1.525 figure - dynamic paths.png" width="450"> | <img src="outputdata/B.1.525_Global/B.1.525 figure - migration flows with cumulative exportations.png" width="450"> |
+| B.1.525 Migration Flows (BF > 150) |
+| :---: |
+| <img src="outputdata/B.1.525_Global/B.1.525 figure - migration flows with cumulative exportations.png" width="900"> |
 
-| Trip Layer Legend | Arc Layer Legend | Cluster Layer Legend |
-| :---: | :---: | :---: |
-| <img src="outputdata/B.1.525_Global/B.1.525 legend - dynamic paths trip.png" width="200"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - migration flows arc.png" width="200"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - cumulative exportations cluster.png" width="200"> |
+| Arc Layer Legend | Cluster Layer Legend |
+| :---: | :---: |
+| <img src="outputdata/B.1.525_Global/B.1.525 legend - migration flows arc.png" width="200"> | <img src="outputdata/B.1.525_Global/B.1.525 legend - cumulative exportations cluster.png" width="200"> |
 
 ---
 
