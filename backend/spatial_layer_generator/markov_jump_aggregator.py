@@ -52,11 +52,7 @@ def aggregate_markov_jumps(branches, coordinate_df, bayes_filter=None,
     #   - If mj_weights provided: all pairs with a positive posterior mean jump count.
     #   - Fallback: all pairs observed in the MCC tree (mcc_counts).
     if mj_weights is not None:
-        # Only include routes that appear in the MCC tree *and* have a positive
-        # posterior weight — this keeps the two data sources consistent.
-        all_pairs = {pair: mj_weights[pair]
-                     for pair in mcc_counts
-                     if mj_weights.get(pair, 0.0) > 0.0}
+        all_pairs = {pair: weight for pair, weight in mj_weights.items() if weight > 0.0}
     else:
         all_pairs = {pair: float(cnt) for pair, cnt in mcc_counts.items()}
     
